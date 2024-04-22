@@ -22,6 +22,7 @@ contract RaffleTest is Test {
     uint32 callbackGasLimit;
     uint64 subscriptionId;
     address vrfCoordinatorAddress;
+    address linkTokenAddress;
 
     function setUp() public {
         // Set up state variables
@@ -35,7 +36,8 @@ contract RaffleTest is Test {
             keyHash,
             callbackGasLimit,
             subscriptionId,
-            vrfCoordinatorAddress
+            vrfCoordinatorAddress,
+            linkTokenAddress
         ) = helperConfig.activeNetworkConfig();
         vm.deal(PLAYER, STARTING_BALANCE);
     }

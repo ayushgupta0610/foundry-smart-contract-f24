@@ -16,7 +16,8 @@ contract DeployRaffle is Script {
             bytes32 keyHash,
             uint32 callbackGasLimit,
             uint64 subscriptionId,
-            address vrfCoordinatorAddress
+            address vrfCoordinatorAddress,
+            address linjTokenAddress
         ) = helperConfig.activeNetworkConfig();
 
         if(subscriptionId == 0) {
