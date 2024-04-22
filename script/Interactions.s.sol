@@ -5,6 +5,7 @@ import { Script, console } from "forge-std/Script.sol";
 import { HelperConfig } from "./HelperConfig.s.sol";
 import { VRFCoordinatorV2Mock } from "@chainlink/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol";
 import { LinkToken } from "../test/mocks/LinkToken.sol";
+import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 
 contract CreateSubscription is Script {
     function createSubscriptionUsingConfig() public returns (uint64 subscriptionId) {
@@ -39,8 +40,8 @@ contract FundSubscription is Script {
     }
 
     function fundSubscription(address vrfCoordinatorAddress, uint64 subId, address linkTokenAddress) public {
-        VRFCoordinatorV2Mock vrfCoordinator = VRFCoordinatorV2Mock(vrfCoordinatorAddress);
         vm.startBroadcast();
+        VRFCoordinatorV2Mock vrfCoordinator = VRFCoordinatorV2Mock(vrfCoordinatorAddress);
         // If we're on local chain (anvil)
         if (block.chainid == 31337) {
             // Fund the subscription
@@ -55,4 +56,27 @@ contract FundSubscription is Script {
     function run() external {
         fundSubscriptionUsingConfig();
     }
-} 
+}
+
+contract AddConsumer is Script {
+    function addConsumerUsingConfig(address raffleAddress) public {
+        HelperConfig helperConfig = new HelperConfig();
+        (,,,, uint64 subId, address vrfCoordinatorAddress,) = helperConfig.activeNetworkConfig();
+        addConsumer(vrfCoordinatorAddress, raffleAddress, subId);
+    }
+
+    function addConsumer(address vrfCoordinatorAddress, address consumerAddress, uint64 subId) public {
+        VRFCoordinatorV2Mock vrfCoordinator = VRFCoordinatorV2Mock(vrfCoordinatorAddress);
+        vm.startBroadcast();
+        vrfCoordinator.addConsumer(subId, consumerAddress);
+        vm.stopBroadcast();
+    }
+
+    function run() external {
+        address raffleAddress = DevOpsTools.get_most_recent_deployment(
+            "Raffle",
+            block.chainid
+        );
+        addConsumerUsingConfig(raffleAddress);
+    }
+}

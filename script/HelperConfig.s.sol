@@ -46,6 +46,7 @@ contract HelperConfig is Script {
         if(activeNetworkConfig.vrfCoordinatorAddress != address(0)) {
             return activeNetworkConfig;
         }
+
         // On anvil testnet, we don't have vrfCoordinatorAddress to create a random number
         // Does keyHash matter on the anvil testnet? If yes, how do we get it in here.
 
@@ -65,7 +66,7 @@ contract HelperConfig is Script {
             interval: 1 days,
             keyHash: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             callbackGasLimit: 150,
-            subscriptionId: 11281,
+            subscriptionId: 0,
             vrfCoordinatorAddress: address(vrfCoordinator),
             linkTokenAddress: address(linkToken)
         });
