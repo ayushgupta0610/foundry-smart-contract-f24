@@ -32,10 +32,10 @@ import { VRFConsumerBaseV2 } from "@chainlink/contracts/src/v0.8/VRFConsumerBase
  * @dev Implements Chainlink VRFv2
  */
 contract Raffle is VRFConsumerBaseV2 {
-    error Raffle_NotEnoughEthSent();
-    error Raffle_TransferFailed();
-    error Raffle_RaffleNotOpen();
-    error Raffle_RaffleUpkeepNotNeeded(uint256 currentBalance, uint256 playersLength, RaffleState state);
+    error Raffle__NotEnoughEthSent();
+    error Raffle__TransferFailed();
+    error Raffle__RaffleNotOpen();
+    error Raffle__RaffleUpkeepNotNeeded(uint256 currentBalance, uint256 playersLength, RaffleState state);
 
     enum RaffleState { OPEN, CALCULATING }
 
@@ -49,7 +49,6 @@ contract Raffle is VRFConsumerBaseV2 {
     uint32 private immutable i_callbackGasLimit;
     uint64 private immutable i_subscriptionId;
     VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
-
 
     address payable[] private s_players;
     uint256 private s_lastTimestamp;
@@ -79,10 +78,10 @@ contract Raffle is VRFConsumerBaseV2 {
 
     function enterRaffle() external payable {
         if (msg.value < i_entranceFee) {
-            revert Raffle_NotEnoughEthSent();
+            revert Raffle__NotEnoughEthSent();
         }
-        if (s_raffleState == RaffleState.OPEN)
-            revert Raffle_RaffleNotOpen();
+        if (s_raffleState != RaffleState.OPEN)
+            revert Raffle__RaffleNotOpen();
         s_players.push(payable(msg.sender));
         emit EnteredRaffle(msg.sender);
     }
@@ -90,7 +89,7 @@ contract Raffle is VRFConsumerBaseV2 {
     function performUpkeep(bytes calldata) external {
         (bool upkeepNeeded, ) = checkUpkeep("0x00"); 
         if (!upkeepNeeded) {
-            revert Raffle_RaffleUpkeepNotNeeded(
+            revert Raffle__RaffleUpkeepNotNeeded(
                 address(this).balance,
                 s_players.length,
                 s_raffleState
@@ -125,12 +124,20 @@ contract Raffle is VRFConsumerBaseV2 {
         s_lastTimestamp = block.timestamp;
         (bool success, ) = winner.call{value: address(this).balance}("");
         if (!success) {
-            revert Raffle_TransferFailed();
+            revert Raffle__TransferFailed();
         }
         emit PickedWinner(winner);
     }
 
     function getEntranceFee() public view returns (uint256) {
         return i_entranceFee;
+    }
+
+    function getRaffleState() public view returns (RaffleState) {
+        return s_raffleState;
+    }
+
+    function getPlayer(uint256 index) public view returns (address) {
+        return s_players[index];
     }
 }
