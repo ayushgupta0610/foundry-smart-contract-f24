@@ -16,8 +16,10 @@ contract HelperConfig is Script {
         uint64 subscriptionId;
         address vrfCoordinatorAddress;
         address linkTokenAddress;
+        uint256 deployerKey;
     }
 
+    uint256 public constant ANVIL_PRIVATE_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
     NetworkConfig public activeNetworkConfig;
 
     constructor() {
@@ -28,15 +30,16 @@ contract HelperConfig is Script {
         }
     }
 
-    function getSepoliaNetworkConfig() public pure returns (NetworkConfig memory networkConfig) {
+    function getSepoliaNetworkConfig() public view returns (NetworkConfig memory networkConfig) {
         networkConfig = NetworkConfig({
-            entranceFee: 0.1 ether,
+            entranceFee: 0.01 ether,
             interval: 1 days,
             keyHash: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
-            callbackGasLimit: 150,
-            subscriptionId: 11281,
+            callbackGasLimit: 500000,
+            subscriptionId: 11234,
             vrfCoordinatorAddress: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625,
-            linkTokenAddress: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+            linkTokenAddress: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
+            deployerKey: vm.envUint("PRIVATE_KEY")
         });
     }
 
@@ -62,13 +65,14 @@ contract HelperConfig is Script {
         vm.stopBroadcast();
 
         networkConfig = NetworkConfig({
-            entranceFee: 0.1 ether,
+            entranceFee: 0.01 ether,
             interval: 1 days,
             keyHash: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
-            callbackGasLimit: 150,
+            callbackGasLimit: 500000,
             subscriptionId: 0,
             vrfCoordinatorAddress: address(vrfCoordinator),
-            linkTokenAddress: address(linkToken)
+            linkTokenAddress: address(linkToken),
+            deployerKey: ANVIL_PRIVATE_KEY
         });
     }
 }

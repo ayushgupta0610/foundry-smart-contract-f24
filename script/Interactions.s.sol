@@ -10,13 +10,13 @@ import { DevOpsTools } from "lib/foundry-devops/src/DevOpsTools.sol";
 contract CreateSubscription is Script {
     function createSubscriptionUsingConfig() public returns (uint64 subscriptionId) {
         HelperConfig helperConfig = new HelperConfig();
-        (,,,,, address vrfCoordinatorAddress,) = helperConfig.activeNetworkConfig();
-        return createSubscription(vrfCoordinatorAddress);
+        (,,,,, address vrfCoordinatorAddress,, uint256 deployerKey) = helperConfig.activeNetworkConfig();
+        return createSubscription(vrfCoordinatorAddress, deployerKey);
     }
 
-    function createSubscription(address vrfCoordinatorAddress) public returns (uint64 subscriptionId) {
+    function createSubscription(address vrfCoordinatorAddress, uint256 deployerKey) public returns (uint64 subscriptionId) {
         // Why do we need to put vm.startBroadcast(); here?
-        vm.startBroadcast();
+        vm.startBroadcast(deployerKey);
         VRFCoordinatorV2Mock vrfCoordinator = VRFCoordinatorV2Mock(vrfCoordinatorAddress);
         uint64 subId = vrfCoordinator.createSubscription();
         vm.stopBroadcast();
@@ -35,12 +35,12 @@ contract FundSubscription is Script {
 
     function fundSubscriptionUsingConfig() public {
          HelperConfig helperConfig = new HelperConfig();
-        (,,,, uint64 subId, address vrfCoordinatorAddress, address linkTokenAddress) = helperConfig.activeNetworkConfig();
-        fundSubscription(vrfCoordinatorAddress, subId, linkTokenAddress);
+        (,,,, uint64 subId, address vrfCoordinatorAddress, address linkTokenAddress, uint256 deployerKey) = helperConfig.activeNetworkConfig();
+        fundSubscription(vrfCoordinatorAddress, subId, linkTokenAddress, deployerKey);
     }
 
-    function fundSubscription(address vrfCoordinatorAddress, uint64 subId, address linkTokenAddress) public {
-        vm.startBroadcast();
+    function fundSubscription(address vrfCoordinatorAddress, uint64 subId, address linkTokenAddress, uint256 deployerKey) public {
+        vm.startBroadcast(deployerKey);
         VRFCoordinatorV2Mock vrfCoordinator = VRFCoordinatorV2Mock(vrfCoordinatorAddress);
         // If we're on local chain (anvil)
         if (block.chainid == 31337) {
@@ -61,13 +61,13 @@ contract FundSubscription is Script {
 contract AddConsumer is Script {
     function addConsumerUsingConfig(address raffleAddress) public {
         HelperConfig helperConfig = new HelperConfig();
-        (,,,, uint64 subId, address vrfCoordinatorAddress,) = helperConfig.activeNetworkConfig();
-        addConsumer(vrfCoordinatorAddress, raffleAddress, subId);
+        (,,,, uint64 subId, address vrfCoordinatorAddress,, uint256 deployerKey) = helperConfig.activeNetworkConfig();
+        addConsumer(vrfCoordinatorAddress, raffleAddress, subId, deployerKey);
     }
 
-    function addConsumer(address vrfCoordinatorAddress, address consumerAddress, uint64 subId) public {
+    function addConsumer(address vrfCoordinatorAddress, address consumerAddress, uint64 subId, uint256 deployerKey) public {
         VRFCoordinatorV2Mock vrfCoordinator = VRFCoordinatorV2Mock(vrfCoordinatorAddress);
-        vm.startBroadcast();
+        vm.startBroadcast(deployerKey);
         vrfCoordinator.addConsumer(subId, consumerAddress);
         vm.stopBroadcast();
     }

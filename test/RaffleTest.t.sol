@@ -5,6 +5,7 @@ import { Test, console } from "forge-std/Test.sol";
 import { Raffle } from "../src/Raffle.sol";
 import { HelperConfig } from "../script/HelperConfig.s.sol";
 import { DeployRaffle } from "../script/DeployRaffle.s.sol";
+import { VRFCoordinatorV2Mock } from "@chainlink/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol";
 
 contract RaffleTest is Test {
 
@@ -23,6 +24,7 @@ contract RaffleTest is Test {
     uint64 subscriptionId;
     address vrfCoordinatorAddress;
     address linkTokenAddress;
+    uint256 deployerKey;
 
     function setUp() public {
         // Set up state variables
@@ -37,7 +39,8 @@ contract RaffleTest is Test {
             callbackGasLimit,
             subscriptionId,
             vrfCoordinatorAddress,
-            linkTokenAddress
+            linkTokenAddress,
+            deployerKey
         ) = helperConfig.activeNetworkConfig();
         vm.deal(PLAYER, STARTING_BALANCE);
     }
@@ -123,7 +126,7 @@ contract RaffleTest is Test {
         // Arrange
         uint256 currentBalance = 0;
         uint256 playerCount = 0;
-        Raffle.RaffleState currentState = Raffle.RaffleState.OPEN;
+        uint256 currentState = uint256(Raffle.RaffleState.OPEN);
 
         // Act / Assert
         vm.expectRevert(abi.encodeWithSelector(
@@ -132,6 +135,7 @@ contract RaffleTest is Test {
             playerCount,
             currentState
         ));
+        // vm.expectRevert();
         raffle.performUpkeep("");
     }
 
@@ -154,4 +158,42 @@ contract RaffleTest is Test {
 
         // assert(uint256(requestId) > 0);
     }
+
+    modifier skipFork() {
+        if (block.chainid != 31337) {
+            return;
+        }
+        _;
+    }
+
+    function testFullfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep(uint256 requestId) public raffleEnteredAndTimePassed skipFork {
+        // Arranged in the modifier
+
+        // Act / Assert
+        vm.expectRevert("nonexistent request");
+        VRFCoordinatorV2Mock(vrfCoordinatorAddress).fulfillRandomWords(requestId, address(raffle));
+    }
+
+    // function testFulfillRandomWordsPicksAWinnerResetsAndSendsMoney() public skipFork {
+    //     // Arrange
+    //     vm.prank(PLAYER);
+    //     raffle.enterRaffle{value: entranceFee}();
+    //     vm.warp(block.timestamp + interval + 1);
+    //     vm.roll(block.number + 1);
+    //     raffle.performUpkeep("");
+    //     // Vm.Log[] memory entries = vm.getRecordedLogs();
+    //     // bytes32 requestId = entries[1].topics[1];
+
+    //     // Act
+
+    //     uint256[] memory randomWords = new uint256[](1);
+    //     randomWords[0] = 1;
+    //     VRFCoordinatorV2Mock(vrfCoordinatorAddress).fulfillRandomWords(uint256(requestId), randomWords);
+
+    //     // Assert
+    //     assert(raffle.getRaffleState() == Raffle.RaffleState.OPEN);
+    //     assert(raffle.getPlayer(0) == address(0));
+    //     assert(raffle.getWinner() == PLAYER);
+    //     assert(PLAYER.balance == STARTING_BALANCE);
+    // }
 }

@@ -35,7 +35,7 @@ contract Raffle is VRFConsumerBaseV2 {
     error Raffle__NotEnoughEthSent();
     error Raffle__TransferFailed();
     error Raffle__RaffleNotOpen();
-    error Raffle__RaffleUpkeepNotNeeded(uint256 currentBalance, uint256 playersLength, RaffleState state);
+    error Raffle__RaffleUpkeepNotNeeded(uint256 currentBalance, uint256 playersLength, uint256 raffleState);
 
     enum RaffleState { OPEN, CALCULATING }
 
@@ -93,7 +93,7 @@ contract Raffle is VRFConsumerBaseV2 {
             revert Raffle__RaffleUpkeepNotNeeded(
                 address(this).balance,
                 s_players.length,
-                s_raffleState
+                uint256(s_raffleState)
             );
         }
         s_raffleState = RaffleState.CALCULATING;
