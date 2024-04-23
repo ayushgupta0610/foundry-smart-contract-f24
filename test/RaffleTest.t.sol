@@ -124,7 +124,7 @@ contract RaffleTest is Test {
 
     function testPerformUpkeepRevertsIfCheckUpkeepIsFalse() public {
         // Arrange
-        uint256 currentBalance = 0;
+        uint256 currentBalance = address(raffle).balance;
         uint256 playerCount = 0;
         uint256 currentState = uint256(Raffle.RaffleState.OPEN);
 
